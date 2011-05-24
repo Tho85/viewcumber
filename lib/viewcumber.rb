@@ -43,9 +43,21 @@ class Viewcumber < Cucumber::Formatter::Json
   end
 
   def after_step(step)
-    @current_step[:html_file] = write_html_to_file(Viewcumber.last_step_html)
-    @current_step[:emails] = emails_for_step(step)
-    super
+    additional_step_info = { 'html_file' => write_html_to_file(Viewcumber.last_step_html), 
+                             'emails' => emails_for_step(step) }
+
+    current_element = @gf.gherkin_object['elements'].last
+    current_step = current_element['steps'].last
+    current_step.merge!(additional_step_info)
+  end
+
+  # The JSON formatter adds the background as a feature element,
+  # we only want full scenarios so lets delete all with type 'background'
+  def after_feature(feature)
+    @gf.gherkin_object['elements'].delete_if do |element|
+      element['type'] == 'background'
+    end
+    super(feature)
   end
 
   private
