@@ -206,7 +206,7 @@ _b=objj_msgSendSuper({receiver:_b,super_class:objj_getClass("Step").super_class}
 if(_b){
 _title=_d.name;
 _keyword=_d.keyword;
-_htmlFilename=_d.html_file;
+_htmlFilename=_d.png_file;
 _emails=objj_msgSend(Email,"emailsFromCucumberJSON:",_d.emails);
 }
 return _b;

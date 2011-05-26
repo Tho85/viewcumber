@@ -36230,7 +36230,7 @@ _37be=objj_msgSendSuper({receiver:_37be,super_class:objj_getClass("Step").super_
 if(_37be){
 _title=_37c0.name;
 _keyword=_37c0.keyword;
-_htmlFilename=_37c0.html_file;
+_htmlFilename=_37c0.png_file;
 _emails=objj_msgSend(Email,"emailsFromCucumberJSON:",_37c0.emails);
 }
 return _37be;

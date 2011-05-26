@@ -97,7 +97,7 @@
 
 - (void)stepWasSelected:(Step)step
 {
-  var url = [[AppController resultsDirURL] stringByAppendingString:[step htmlFilename]];
+  var url = [[AppController resultsDirURL] stringByAppendingString:[step pngFilename]];
   if(url != [webView mainFrameURL]) {
     [webView setMainFrameURL:url];
   }
