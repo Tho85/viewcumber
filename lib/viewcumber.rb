@@ -11,6 +11,10 @@ if respond_to? :AfterStep
       if !@email.blank?
         Viewcumber.last_step_html = Viewcumber.rewrite_css_and_image_references(@email)
         @email = nil
+      elsif Capybara.page.driver.respond_to?(:browser) and Capybara.page.driver.browser.respond_to?(:save_screenshot)
+        tempfile = Tempfile.new('screenshot').path
+        Capybara.page.driver.browser.save_screenshot(tempfile)
+        Viewcumber.last_step_png  = open(tempfile).read
       elsif Capybara.page.driver.respond_to? :html
         Viewcumber.last_step_html = Viewcumber.rewrite_css_and_image_references(Capybara.page.driver.html.to_s)
       end
@@ -22,7 +26,7 @@ end
 class Viewcumber < Cucumber::Formatter::Json
   module Cucumber09
     def after_step(step)
-      @current_step[:html_file] = write_html_to_file(Viewcumber.last_step_html)
+      @current_step[:html_file] = write_data_to_file(Viewcumber.last_step_html, :html)
       @current_step[:emails] = emails_for_step(step)
       super
     end
@@ -30,7 +34,8 @@ class Viewcumber < Cucumber::Formatter::Json
 
   module Cucumber010
     def after_step(step)
-      additional_step_info = { 'html_file' => write_html_to_file(Viewcumber.last_step_html), 
+      additional_step_info = { 'html_file' => write_data_to_file(Viewcumber.last_step_html, :html), 
+                               'png_file'  => write_data_to_file(Viewcumber.last_step_png,  :png),
                                'emails' => emails_for_step(step) }
 
       current_element = @gf.gherkin_object['elements'].last
@@ -56,7 +61,7 @@ class Viewcumber < Cucumber::Formatter::Json
   end
 
   class << self
-    attr_accessor :last_step_html
+    attr_accessor :last_step_html, :last_step_png
 
     def rewrite_css_and_image_references(response_html) # :nodoc:
       return response_html unless Capybara.asset_root
@@ -85,14 +90,14 @@ class Viewcumber < Cucumber::Formatter::Json
   #
   # Filename are based on the SHA1 of the contents. This means 
   # that we will only write the same html once
-  def write_html_to_file(html)
-    return nil unless html && html != ""
-    filename = Digest::SHA1.hexdigest(html) + ".html"
+  def write_data_to_file(data, type=:html)
+    return nil unless data && data != ""
+    filename = Digest::SHA1.hexdigest(data) + ".#{type}"
     full_file_path = File.join(results_dir, filename)
 
     unless File.exists?(full_file_path)
       File.open(full_file_path, 'w+') do |f|
-        f  << html
+        f  << data
       end
     end
 
